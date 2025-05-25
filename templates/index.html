@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tạo bài viết SEO tự động</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #222;
+      margin-bottom: 24px;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-size: 18px;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      resize: vertical;
+      transition: border-color 0.3s ease;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 8px rgba(74,144,226,0.3);
+    }
+    button {
+      margin-top: 20px;
+      padding: 14px 28px;
+      font-size: 18px;
+      font-weight: 600;
+      background: #4a90e2;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.25s ease;
+    }
+    button:hover {
+      background: #357ABD;
+    }
+    #result {
+      margin-top: 30px;
+      white-space: pre-wrap;
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      min-height: 100px;
+      font-size: 16px;
+      color: #333;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tạo bài viết SEO và tự động đăng bài trên Wordpress</h1>
+    <form id="seoForm">
+      <label for="keywords">Nhập các từ khóa (mỗi từ khóa 1 dòng):</label>
+      <textarea id="keywords" name="keywords" placeholder="vd: ngành khoa học viễn tưởng&#10;ngành khoa học viễn tưởng học trường nào" required></textarea>
+      <button type="submit">Tạo bài viết</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('seoForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      resultDiv.textContent = "Đang tạo bài viết, vui lòng chờ...";
+
+      const rawKeywords = document.getElementById('keywords').value;
+      // Tách từng dòng, loại bỏ dòng trống
+      const keywords = rawKeywords
+        .split('\n')
+        .map(k => k.trim())
+        .filter(k => k.length > 0);
+
+      try {
+        const response = await fetch('/create_post', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ keywords })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            let msg = `Tạo thành công! Bài viết đang được lưu dưới dạng Draft.
+                <br>Bài viết nên chỉnh sửa và xét duyệt nội dung trước khi Publish.
+                <br><strong>Tiêu đề:</strong> ${data.title}
+            `;
+
+            if (data.link) {
+              msg += `
+                <br><strong>Link bài viết:</strong> <a href="${data.link}" style="color: #2980b9; white-space: nowrap;"">${data.link}</a>
+              `;
+            }
+            resultDiv.innerHTML = msg;
+          }
+
+          else {
+            resultDiv.textContent = `Lỗi: ${data.error || "Không xác định"}`;
+          }
+        } else {
+          const errorText = await response.text();
+          resultDiv.textContent = `Lỗi server: ${errorText}`;
+        }
+      } catch (err) {
+        resultDiv.textContent = `Lỗi kết nối: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
