@@ -10,7 +10,7 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-genai.configure(api_key="AIzaSyDOnAU512C8wUeCPq1xa-9Htq1xZ_j12Ik")
+genai.configure(api_key="YOUR_API_KEY")
 model = genai.GenerativeModel('models/gemini-2.0-flash')
 
 
